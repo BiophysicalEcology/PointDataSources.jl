@@ -18,5 +18,14 @@ using PointDataSources, Test, Dates
             lon=-120.5, lat=39.0, date=Date(2020,1,1), level=850)
         @test length(pl.times) == 4
         @test all(pl.values .> 0)
+
+        # SurfaceFlux gaussian-grid files carry a degenerate length-1 "level"
+        # axis even for surface variables (4D, unlike Surface's plain 3D) --
+        # no `level` keyword needed, but still real data (regression check
+        # for a dimensionality bug that threw a BoundsError here before).
+        sf = getpoint(NCEP{SurfaceFlux,2}, :tmax;
+            lon=-120.5, lat=39.0, date=(Date(2020,1,1), Date(2020,1,2)))
+        @test length(sf.times) == 8
+        @test all(250.0 .< sf.values .< 330.0)
     end
 end

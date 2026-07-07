@@ -15,6 +15,12 @@ end
 # NetCDF variable name = first dot-token of the filename part (e.g. "pres.sfc" -> "pres").
 _ncep_varname(T, layer) = first(split(RasterDataSources._filename_part(T, layer), "."))
 
+# Surface/SurfaceFlux files also have a "level" dimension, but it's a
+# degenerate length-1 nominal-surface axis, not a real vertical grid --
+# checking `haskey(ds, "level")` would wrongly demand a `level` keyword for
+# these too. Dispatch on the actual Group type parameter instead.
+_needs_level(T::Type{<:NCEP}) = RasterDataSources.group(T) === PressureLevels
+
 @doc """
     getpoint(::Type{<:NCEP}, layer; lon, lat, date, level=nothing)
 
@@ -41,9 +47,17 @@ function getpoint(T::Type{<:NCEP}, layer::Symbol; lon, lat, date, level=nothing)
             (i0 === nothing || i1 === nothing || i0 > i1) && return (DateTime[], Float64[], "")
             var = ds[_ncep_varname(T, layer)]
             u = haskey(var.attrib, "units") ? var.attrib["units"] : ""
-            if haskey(ds, "level")
-                level === nothing && throw(ArgumentError("`level` keyword (hPa) is required for NCEP layer `$layer`"))
-                li = _nearest_index(ds["level"][:], Float64(level))
+            # Some Surface/SurfaceFlux gaussian-grid files also carry a
+            # degenerate length-1 "level" axis (nominal surface, not a real
+            # vertical grid) -- index through it with a fixed 1 when present,
+            # regardless of whether this source needs a *user-supplied* level.
+            if ndims(var) == 4
+                if _needs_level(T)
+                    level === nothing && throw(ArgumentError("`level` keyword (hPa) is required for NCEP layer `$layer`"))
+                    li = _nearest_index(ds["level"][:], Float64(level))
+                else
+                    li = 1
+                end
                 vals = Float64.(var[loni, lati, li, i0:i1])
             else
                 vals = Float64.(var[loni, lati, i0:i1])
