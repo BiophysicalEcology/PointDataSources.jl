@@ -12,12 +12,12 @@ using CSV
 using JSON
 using NCDatasets
 import RasterDataSources
-using RasterDataSources: GRIDMET, NCEP, BARRA, SILO, SoilGrids
+using RasterDataSources: GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5
 using RasterDataSources: Surface, PressureLevels, SurfaceFlux, SixHour
 using RasterDataSources: BARRAR2, BARRAC2, AUS11, AUST11, AUST04
 using RasterDataSources: depths
 
-export GRIDMET, NCEP, BARRA, SILO, SoilGrids
+export GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5
 export Surface, PressureLevels, SurfaceFlux, SixHour
 export BARRAR2, BARRAC2, AUS11, AUST11, AUST04
 export getpoint, pointlayers, getpoint_keywords, pointbackend
