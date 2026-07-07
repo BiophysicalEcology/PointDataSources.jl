@@ -99,12 +99,19 @@ monthly), a requested date range can span multiple files. `dates_seq` is
 one representative date per file (e.g. from `RasterDataSources.date_sequence`);
 `open_and_slice(d) -> (times, values, units)` opens the file for `d` and
 returns whatever portion of the requested range it contains (empty vectors
-if none). Results are concatenated in order.
+if none). Files are fetched concurrently (`Threads.@threads`) -- each opens
+its own independent NetCDF/OPeNDAP handle, the same pattern
+`MicroclimateMapper.jl` already uses for its area-download loaders -- then
+results are concatenated in `dates_seq` order (not completion order).
 """
 function _concat_over_files(dates_seq, open_and_slice)
+    n = length(dates_seq)
+    results = Vector{Any}(undef, n)
+    Threads.@threads for i in 1:n
+        results[i] = open_and_slice(dates_seq[i])
+    end
     times, values, units = DateTime[], Float64[], ""
-    for d in dates_seq
-        t, v, u = open_and_slice(d)
+    for (t, v, u) in results
         append!(times, t)
         append!(values, v)
         isempty(u) || (units = u)
