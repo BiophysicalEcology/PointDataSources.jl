@@ -12,6 +12,13 @@ const SILO_POINT_LAYERS = keys(SILO_POINT_CODE)
 pointlayers(::Type{SILO}) = SILO_POINT_LAYERS
 const SILO_DATADRILL_URL = "https://www.longpaddock.qld.gov.au/cgi-bin/silo/DataDrillDataset.php"
 
+const SILO_POINT_UNITS = (
+    daily_rain="mm", max_temp="°C", min_temp="°C", rh_tmin="%", rh_tmax="%",
+    radiation="MJ/m^2", evap_pan="mm", vp_deficit="hPa", et_short_crop="mm",
+    et_morton_potential="mm", vp="hPa", mslp="hPa", evap_syn="mm", et_tall_crop="mm",
+    et_morton_actual="mm", evap_morton_lake="mm",
+)
+
 @doc """
     getpoint(::Type{SILO}, layer; lon, lat, date, username)
 
@@ -29,7 +36,7 @@ function getpoint(T::Type{SILO}, layer::Symbol; lon, lat, date, username=get(ENV
         "SILO requires an email as `username` keyword or ENV[\"SILO_EMAIL\"]"
     ))
     start, finish = _point_daterange(date)
-    units = RasterDataSources.SILO_LAYERS[layer].units
+    units = SILO_POINT_UNITS[layer]
     resp = _retry() do
         HTTP.get(SILO_DATADRILL_URL; query=Dict(
             "lat"=>string(lat), "lon"=>string(lon),
