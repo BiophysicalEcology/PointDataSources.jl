@@ -5,7 +5,7 @@ Fetch a single point's time series (or static value) from `source`, without
 downloading a whole raster file. Mirrors `RasterDataSources.getraster`'s
 `(source, [layer]; kw...)` convention, returning values directly instead of
 a file path. `source` is one of RasterDataSources.jl's existing types
-(`GRIDMET`, `NCEP`, `BARRA`, `SILO`, `SoilGrids`, `ERA5`).
+(`GRIDMET`, `NCEP`, `BARRA`, `SILO`, `SoilGrids`, `ERA5`, `SEAS5`, `SEAS5Monthly`).
 
 # Keywords
 - `lon`, `lat`: decimal degrees.
@@ -62,3 +62,6 @@ struct RestJSONBackend <: PointBackend end
 
 "Point access via a cloud-optimised Zarr store (`PointDataSourcesRastersExt`). Used by `ERA5`."
 struct ZarrBackend <: PointBackend end
+
+"Point access by downloading the grid cell around the point through a queued CDS API request (`RasterDataSources.getraster`). Used by `SEAS5`, `SEAS5Monthly`."
+struct CDSBackend <: PointBackend end

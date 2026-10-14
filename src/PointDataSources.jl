@@ -11,17 +11,18 @@ using HTTP
 using CSV
 using JSON
 using NCDatasets
+using Extents: Extent
 import RasterDataSources
-using RasterDataSources: GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5
+using RasterDataSources: GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5, SEAS5, SEAS5Monthly
 using RasterDataSources: Surface, PressureLevels, SurfaceFlux, SixHour
 using RasterDataSources: BARRAR2, BARRAC2, AUS11, AUST11, AUST04
 using RasterDataSources: depths
 
-export GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5
+export GRIDMET, NCEP, BARRA, SILO, SoilGrids, ERA5, SEAS5, SEAS5Monthly
 export Surface, PressureLevels, SurfaceFlux, SixHour
 export BARRAR2, BARRAC2, AUS11, AUST11, AUST04
 export getpoint, pointlayers, getpoint_keywords, pointbackend
-export OpenDAPBackend, RestCSVBackend, RestJSONBackend, ZarrBackend
+export OpenDAPBackend, RestCSVBackend, RestJSONBackend, ZarrBackend, CDSBackend
 
 include("interface.jl")
 include("shared.jl")
@@ -31,5 +32,6 @@ include("ncep/ncep.jl")
 include("barra/barra.jl")
 include("silo/silo.jl")
 include("soilgrids/soilgrids.jl")
+include("seas5/seas5.jl")
 
 end
