@@ -7,3 +7,4 @@ using SafeTestsets
 @time @safetestset "silo" begin include("silo.jl") end
 @time @safetestset "soilgrids" begin include("soilgrids.jl") end
 @time @safetestset "era5" begin include("era5.jl") end
+@time @safetestset "seas5" begin include("seas5.jl") end
