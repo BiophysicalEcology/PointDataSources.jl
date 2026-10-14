@@ -11,9 +11,11 @@ const _SEAS5_LON_DIMS = ("longitude", "lon")
 const _SEAS5_LAT_DIMS = ("latitude", "lat")
 const _SEAS5_MEMBER_DIMS = ("number", "realization", "member")
 
-# CDS serves SEAS5 on a 1° grid with points at whole degrees. Requesting the
-# whole surrounding cell means the area always holds grid points on both
-# sides of the point, and every point in that cell shares one cached file.
+# CDS serves SEAS5 on a 1° grid with points at cell centres (144.5, -37.5).
+# Requesting the whole-degree box around the point returns just the one
+# grid point whose cell holds it -- the nearest -- and every point in that
+# cell shares one cached file.
+const _SEAS5_GRID_STEP = 1.0
 function _seas5_cell(lon::Real, lat::Real)
     (-180 <= lon <= 180 && -90 <= lat <= 90) || throw(ArgumentError(
         "`lon`/`lat` must lie within [-180, 180]/[-90, 90], got ($lon, $lat)"
@@ -57,8 +59,11 @@ function _read_seas5_point(T, path; lon, lat, date, leadtime)
         lond = dims[_find_dim(dims, _SEAS5_LON_DIMS)]
         latd = dims[_find_dim(dims, _SEAS5_LAT_DIMS)]
         lonv, latv = Float64.(ds[lond][:]), Float64.(ds[latd][:])
-        loni = _nearest_index(lonv, _normalize_lon(lonv, lon), _half_cell(lonv))
-        lati = _nearest_index(latv, lat, _half_cell(latv))
+        # The file usually holds a single grid point, so the tolerance comes
+        # from the known grid step, not `_half_cell` (which needs two).
+        tol = _SEAS5_GRID_STEP / 2 * 1.001
+        loni = _nearest_index(lonv, _normalize_lon(lonv, lon), tol)
+        lati = _nearest_index(latv, lat, tol)
 
         idx = map(d -> d == lond ? loni : d == latd ? lati : Colon(), dims)
         data = var[idx...]

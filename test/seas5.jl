@@ -56,6 +56,14 @@ end
         @test nt.units == "K"
         @test nt.times == DateTime(2026, 9, 1) .+ Hour.([24, 48, 72])
 
+        # Layout of a real CDS download: the whole-degree request box holds a
+        # single grid point at the cell centre, dims in this order.
+        r = write_seas5(joinpath(dir, "real.nc"); lons=[144.5], lats=[-37.5],
+            order=(:lon, :lat, :lead, :ref, :member), members=0:50)
+        nt = _read_seas5_point(SEAS5, r; lon=144.96, lat=-37.81, date=Date(2026, 9, 1), leadtime=[24, 48, 72])
+        @test nt.values == [value(144.5, -37.5, l, m) for l in 1:3, m in 0:50]
+        @test nt.members == 0:50
+
         # Member-first order, monthly lead axis name, no member coordinate,
         # and a 2-D valid_time coordinate that must not be taken as data.
         b = write_seas5(joinpath(dir, "b.nc"); order=(:member, :ref, :lead, :lat, :lon),
